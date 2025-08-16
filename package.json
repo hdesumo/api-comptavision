@@ -1,0 +1,12 @@
+{
+  "name": "api-comptavision",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "migrate": "sequelize-cli db:migrate",
+    "migrate:undo": "sequelize-cli db:migrate:undo",
+    "migrate:all": "sequelize-cli db:migrate && echo 'Migrations OK'"
+  }
+}
+
