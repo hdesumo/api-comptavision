@@ -6,13 +6,9 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import jwt from 'jsonwebtoken';
 
-// ⚠️ TES ROUTES SONT DANS src/route/ (minuscule)
-import adminRoutes from './route/adminRoutes.js';
-import licencePublicRoutes from './route/licencePublicRoutes.js';
-import affRoutes from './route/aff/index.js';
-
 const app = express();
 
+/** CORS whitelist via CORS_ORIGINS (.env), séparées par des virgules. */
 function buildCorsOptions() {
   const raw = process.env.CORS_ORIGINS || '';
   const whitelist = raw.split(',').map(s => s.trim()).filter(Boolean);
@@ -39,12 +35,12 @@ app.use(cors(buildCorsOptions()));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Healthcheck
+// Healthcheck très tôt (utile si les routes plantent)
 app.get('/status', (req, res) => {
   res.status(200).json({ status: 'API Comptavision OK', timestamp: new Date().toISOString() });
 });
 
-// === LOGIN ADMIN
+// === LOGIN ADMIN (déjà validé)
 app.post('/api/admin/login', (req, res) => {
   const { email, password } = req.body || {};
   const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
@@ -63,23 +59,39 @@ app.post('/api/admin/login', (req, res) => {
   res.json({ token });
 });
 
-// === Routes
-app.use('/api/admin', adminRoutes);          // /licenses*, PAS /login ici
-app.use('/api/public', licencePublicRoutes); // /validate, /activate
-app.use('/api/aff', affRoutes);              // routes aff
+// === Imports dynamiques des routes (protégés)
+(async () => {
+  try {
+    // ⚠️ tes routes sont en minuscules : src/route/...
+    const { default: adminRoutes } =
+      await import('./route/adminRoutes.js');
+    const { default: licencePublicRoutes } =
+      await import('./route/licencePublicRoutes.js');
+    const { default: affRoutes } =
+      await import('./route/aff/index.js');
 
-// 404
-app.use((req, res) => {
-  res.status(404).json({ error: 'Not Found', path: req.originalUrl });
-});
+    app.use('/api/admin', adminRoutes);          // /licenses*, PAS /login ici
+    app.use('/api/public', licencePublicRoutes); // /validate, /activate
+    app.use('/api/aff', affRoutes);              // routes aff
+    console.log('✅ Routes montées');
+  } catch (err) {
+    // On démarre quand même le serveur et on log l’erreur exacte côté Railway
+    console.error('❌ Échec import des routes:', err?.message || err);
+  }
 
-// Erreurs
-app.use((err, req, res, next) => {
-  console.error('❌ Error:', err.message);
-  res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
-});
+  // 404
+  app.use((req, res) => {
+    res.status(404).json({ error: 'Not Found', path: req.originalUrl });
+  });
 
-// Start
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`🚀 API Comptavision running on port ${PORT}`));
+  // Erreurs
+  app.use((err, req, res, next) => {
+    console.error('❌ Error:', err.message);
+    res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
+  });
+
+  // Start
+  const PORT = process.env.PORT || 8080;
+  app.listen(PORT, () => console.log(`🚀 API Comptavision running on port ${PORT}`));
+})();
 
