@@ -12,13 +12,17 @@
     "reset": "sequelize db:migrate:undo:all && sequelize db:migrate && sequelize db:seed:all"
   },
   "dependencies": {
-    "express": "^4.19.0",
-    "sequelize": "^6.37.7",
-    "pg": "^8.11.3",
-    "pg-hstore": "^2.3.4",
-    "dotenv": "^16.4.5",
+    "body-parser": "^1.20.2",
     "cors": "^2.8.5",
-    "body-parser": "^1.20.2"
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.0.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.1",
+    "pg": "^8.16.3",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.7"
   },
   "devDependencies": {
     "nodemon": "^3.1.0",
@@ -27,4 +31,3 @@
   "author": "ComptaVision",
   "license": "ISC"
 }
-
