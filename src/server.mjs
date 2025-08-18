@@ -6,11 +6,10 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import jwt from 'jsonwebtoken';
 
-// Tes routes/controllers/services restent en CommonJS.
-// Importer un CJS dans un module ESM (.mjs) fonctionne via "default".
-import adminRoutes from './Route/adminRoutes.js';
-import licencePublicRoutes from './Route/licencePublicRoutes.js';
-import affRoutes from './Route/aff/index.js';
+// ⚠️ TES ROUTES SONT DANS src/route/ (minuscule)
+import adminRoutes from './route/adminRoutes.js';
+import licencePublicRoutes from './route/licencePublicRoutes.js';
+import affRoutes from './route/aff/index.js';
 
 const app = express();
 
@@ -45,7 +44,7 @@ app.get('/status', (req, res) => {
   res.status(200).json({ status: 'API Comptavision OK', timestamp: new Date().toISOString() });
 });
 
-// === LOGIN ADMIN (déjà validé)
+// === LOGIN ADMIN
 app.post('/api/admin/login', (req, res) => {
   const { email, password } = req.body || {};
   const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
@@ -64,7 +63,7 @@ app.post('/api/admin/login', (req, res) => {
   res.json({ token });
 });
 
-// === Montage des autres routes (CJS importées en default)
+// === Routes
 app.use('/api/admin', adminRoutes);          // /licenses*, PAS /login ici
 app.use('/api/public', licencePublicRoutes); // /validate, /activate
 app.use('/api/aff', affRoutes);              // routes aff
