@@ -8,6 +8,11 @@
     "start": "node src/server.mjs",
     "dev": "nodemon src/server.mjs"
   },
+  
+    "scripts": {
+      "build": "NEXT_TELEMETRY_DISABLED=1 next build"
+    },
+  
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
