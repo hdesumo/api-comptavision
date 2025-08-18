@@ -1,22 +1,19 @@
-// src/server.js
+// src/server.mjs
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import jwt from 'jsonwebtoken';
-import { createRequire } from 'module';
 
-const require = createRequire(import.meta.url);
-
-// ⚠️ Routeurs en CommonJS (module.exports) → chargés via require
-const adminRoutes = require('./Route/adminRoutes.js');
-const licencePublicRoutes = require('./Route/licencePublicRoutes.js');
-const affRoutes = require('./Route/aff/index.js');
+// Tes routes/controllers/services restent en CommonJS.
+// Importer un CJS dans un module ESM (.mjs) fonctionne via "default".
+import adminRoutes from './Route/adminRoutes.js';
+import licencePublicRoutes from './Route/licencePublicRoutes.js';
+import affRoutes from './Route/aff/index.js';
 
 const app = express();
 
-/** CORS whitelist via CORS_ORIGINS (.env), séparées par des virgules. */
 function buildCorsOptions() {
   const raw = process.env.CORS_ORIGINS || '';
   const whitelist = raw.split(',').map(s => s.trim()).filter(Boolean);
@@ -48,9 +45,7 @@ app.get('/status', (req, res) => {
   res.status(200).json({ status: 'API Comptavision OK', timestamp: new Date().toISOString() });
 });
 
-// === LOGIN ADMIN (déjà validé) ===
-// POST /api/admin/login
-// .env: ADMIN_EMAIL, ADMIN_PASSWORD, JWT_SECRET, (option) JWT_EXPIRES=7d
+// === LOGIN ADMIN (déjà validé)
 app.post('/api/admin/login', (req, res) => {
   const { email, password } = req.body || {};
   const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
@@ -69,10 +64,10 @@ app.post('/api/admin/login', (req, res) => {
   res.json({ token });
 });
 
-// === Montage des autres routes ===
+// === Montage des autres routes (CJS importées en default)
 app.use('/api/admin', adminRoutes);          // /licenses*, PAS /login ici
 app.use('/api/public', licencePublicRoutes); // /validate, /activate
-app.use('/api/aff', affRoutes);              // selon ton dossier aff/
+app.use('/api/aff', affRoutes);              // routes aff
 
 // 404
 app.use((req, res) => {
