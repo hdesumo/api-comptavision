@@ -1,12 +1,30 @@
 {
   "name": "api-comptavision",
   "version": "1.0.0",
-  "type": "commonjs",
+  "description": "API backend Comptavision avec Express et Sequelize",
+  "type": "module",
+  "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "migrate": "sequelize-cli db:migrate",
-    "migrate:undo": "sequelize-cli db:migrate:undo",
-    "migrate:all": "sequelize-cli db:migrate && echo 'Migrations OK'"
-  }
+    "dev": "nodemon src/server.js",
+    "migrate": "sequelize db:migrate",
+    "seed": "sequelize db:seed:all",
+    "reset": "sequelize db:migrate:undo:all && sequelize db:migrate && sequelize db:seed:all"
+  },
+  "dependencies": {
+    "express": "^4.19.0",
+    "sequelize": "^6.37.7",
+    "pg": "^8.11.3",
+    "pg-hstore": "^2.3.4",
+    "dotenv": "^16.4.5",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0",
+    "sequelize-cli": "^6.6.2"
+  },
+  "author": "ComptaVision",
+  "license": "ISC"
 }
 

@@ -1,27 +1,31 @@
 // src/config/database.js
+require('dotenv').config();
 const { Sequelize } = require('sequelize');
 
-const url = process.env.DATABASE_URL;
-if (!url) {
-  throw new Error('DATABASE_URL is required (set it on your Railway backend service).');
-}
+const useSSL = String(process.env.DB_SSL || 'false').toLowerCase() === 'true';
 
-// Par défaut en prod Railway, on met SSL=true.
-// Tu peux forcer via DB_SSL=false si besoin (rare).
-const ssl =
-  String(process.env.DB_SSL ?? 'true').trim().toLowerCase() === 'true';
+const sequelize = process.env.DATABASE_URL
+  ? new Sequelize(process.env.DATABASE_URL, {
+      dialect: 'postgres',
+      logging: false,
+      dialectOptions: useSSL
+        ? { ssl: { require: true, rejectUnauthorized: false } }
+        : {}
+    })
+  : new Sequelize(
+      process.env.DB_NAME || 'comptavision',
+      process.env.DB_USER || 'postgres',
+      process.env.DB_PASS || process.env.DB_PASSWORD || 'postgres',
+      {
+        host: process.env.DB_HOST || 'localhost',
+        port: Number(process.env.DB_PORT || 5432),
+        dialect: 'postgres',
+        logging: false,
+        dialectOptions: useSSL
+          ? { ssl: { require: true, rejectUnauthorized: false } }
+          : {}
+      }
+    );
 
-const sequelize = new Sequelize(url, {
-  dialect: 'postgres',
-  dialectOptions: ssl ? { ssl: { require: true, rejectUnauthorized: false } } : {},
-  logging: false,
-  pool: { max: 10, min: 0, idle: 10_000, acquire: 60_000 },
-});
-
-// Option utile: test de connexion au démarrage
-async function assertDbConnection() {
-  await sequelize.authenticate();
-}
-
-module.exports = { sequelize, assertDbConnection };
+module.exports = sequelize;
 
